@@ -1,9 +1,12 @@
 #include <iostream>
+#include <thread>
 
-using namespace std;
+void hello(){
+    std::cout << "Hello Parallel World!" << std::endl;
+}
 
-int main()
-{
-    cout << "Hello World!" << endl;
+int main(){
+    std::thread thread(hello);
+    thread.join();
     return 0;
 }
