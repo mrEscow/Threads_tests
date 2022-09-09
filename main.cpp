@@ -172,6 +172,8 @@ public:
     void operator()(std::vector<char>*,int);
 };
 //*******************************************************************************
+// Передача задач между потоками:
+//*******************************************************************************
 // Выполнение кода в потоке пользовательского интерфейса с применением std::packaged_task
 #include <deque>
 #include <mutex>
@@ -207,6 +209,51 @@ std::future<void> post_task_for_gui_thread(Func f)
     std::lock_guard<std::mutex> lk(m);
     tasks.push_back(std::move(task));
     return res;
+}
+//*******************************************************************************
+// Обработка нескольких соединений в одном потоке с помощью объектов-обещаний
+//    #include <future>
+//    void process_connections(connection_set& connections)
+//    {
+//        while(!done(connections))
+//            {
+//                for(connection_iterator connection = connections.begin(), end = connections.end();
+//                 connection! = end;
+//                 ++connection;)
+//                {
+//                    if(connection->has_incoming_data())
+//                    {
+//                            data_packet data=connection->incoming();
+//                            std::promise<payload_type>& p = connection->get_promise(data.id);
+//                            p.set_value(data.payload);
+//                    }
+//                    if(connection->has_outgoing_data())
+//                    {
+//                            outgoing_packet data = connection->top_of_outgoing_queue();
+//                            connection->send(data.payload);
+//                            data.promise.set_value(true);
+//                    }
+//                }
+//            }
+//    }
+//*******************************************************************************
+//  Ожидание условной переменной с таймаутом
+#include <condition_variable>
+#include <mutex>
+#include <chrono>
+std::condition_variable cv;
+bool done;
+std::mutex mutex;
+bool wait_loop()
+{
+    auto const timeout= std::chrono::steady_clock::now() + std::chrono::milliseconds(500);
+    std::unique_lock<std::mutex> lk(mutex);
+    while(!done)
+    {
+        if(cv.wait_until(lk,timeout) == std::cv_status::timeout)
+            break;
+    }
+    return done;
 }
 //*******************************************************************************
 int main(){
