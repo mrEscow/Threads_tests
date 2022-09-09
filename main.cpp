@@ -309,17 +309,15 @@ struct card_inserted
 //    void waiting_for_card()
 //    {
 //        interface_hardware.send(display_enter_card());
-//            incoming.wait()
-
-//                .handle<card_inserted>(
-//                    [&](card_inserted const& msg)
-//                    {
-//                        account=msg.account;
-//                        pin="";
-//                             interface_hardware.send(display_enter_pin());
-//                        state=&atm::getting_pin;
-//                    }
-//                    );
+//        incoming.wait().handle<card_inserted>(
+//          [&](card_inserted const& msg)
+//          {
+//              account=msg.account;
+//              pin="";
+//              interface_hardware.send(display_enter_pin());
+//               state=&atm::getting_pin;
+//          }
+//        );
 //    }
 //    void getting_pin();
 //public:
@@ -339,6 +337,7 @@ struct card_inserted
 //    }
 //};
 //*******************************************************************************
+
 int main(){
 
     return 0;
