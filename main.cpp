@@ -235,6 +235,33 @@ void thread_b()
     other_stuff();
 }
 //*******************************************************************************
+// Гибкая блокировка с помощью std::unique_lock
+//*******************************************************************************
+// Применение std::lock() и std::unique_guard для реализации операции обмена
+class some_big_object;
+void swap(some_big_object& lhs,some_big_object& rhs);
+class XX
+{
+private:
+    some_big_object some_detail;
+    std::mutex m;
+public:
+    XX(some_big_object const& sd):some_detail(sd){}
+    friend void swap(XX& lhs, XX& rhs)
+    {
+        if(&lhs == &rhs)
+            return;
+
+        // std::defer_lock оставляет мьютексы не захваченными
+        std::unique_lock<std::mutex> lock_a(lhs.m,std::defer_lock);
+        std::unique_lock<std::mutex> lock_b(rhs.m,std::defer_lock);
+
+        std::lock(lock_a,lock_b);// Мьютексы захватываются
+
+        swap(lhs.some_detail,rhs.some_detail);
+    }
+};
+//*******************************************************************************
 int main(){
 
     return 0;
