@@ -262,6 +262,82 @@ public:
     }
 };
 //*******************************************************************************
+// Поочередный захват мьютексов в операторе сравнения
+class Y
+{
+private:
+    int some_detail;
+    mutable std::mutex m;
+    int get_detail() const
+    {
+        std::lock_guard<std::mutex> lock_a(m);
+            return some_detail;
+    }
+public:
+    Y(int sd):some_detail(sd){}
+    friend bool operator == (Y const& lhs, Y const& rhs)
+    {
+        if(&lhs == &rhs)
+            return true;
+        int const lhs_value = lhs.get_detail();
+        int const rhs_value = rhs.get_detail();
+        return lhs_value == rhs_value;
+    }
+};
+//*******************************************************************************
+// Другие средства защиты разделяемых данных
+//*******************************************************************************
+// Потокобезопасная отложенная инициализация члена класса с помощью функции std::call_once()
+class XY
+{
+//private:
+//    connection_info connection_details;
+//    connection_handle connection;
+//    std::once_flag connection_init_flag;
+//    void open_connection()
+//    {
+//        connection = connection_manager.open(connection_details);
+//    }
+//public:
+//    XY(connection_info const& connection_details_):
+//        connection_details(connection_details_)
+//    {}
+//    void send_data(data_packet const& data)
+//    {
+//        std::call_once(connection_init_flag, &XY::open_connection, this);
+//        connection.send_data(data);
+//    }
+//    data_packet receive_data()
+//    {
+//        std::call_once(connection_init_flag, &XY::open_connection, this);
+//        return connection.receive_data();
+//    }
+};
+//*******************************************************************************
+// Защита структуры данных с помощью boost::shared_mutex
+//#include <map>
+//#include <string>
+//#include <mutex>
+//#include <boost/thread/shared_mutex.hpp>
+//class dns_entry;
+//class dns_cache
+//{
+//    std::map<std::string,dns_entry> entries;
+//    mutable boost::shared_mutex entry_mutex;
+//public:
+//    dns_entry find_entry(std::string const& domain) const
+//    {
+//        boost::shared_lock<boost::shared_mutex> lk(entry_mutex);
+//        std::map<std::string,dns_entry>::const_iterator const it = entries.find(domain);
+//        return (it == entries.end()) ? dns_entry() : it->second;
+//    }
+//    void update_or_add_entry(std::string const& domain, dns_entry const& dns_details)
+//    {
+//        std::lock_guard<boost::shared_mutex> lk(entry_mutex);
+//        entries[domain] = dns_details;
+//    }
+//};
+//*******************************************************************************
 int main(){
 
     return 0;
